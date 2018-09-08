@@ -11,9 +11,8 @@ void usage() 						// display the usage of this package
 		"    -n    {integer}  cardinality of the dataset\n"
 		"    -d    {integer}  dimensionality of the dataset\n"
 		"    -qn   {integer}  number of queries\n"
-		"    -K    {integer}  #hash tables for Sign_ALSH and Simple_LSH\n"
-		"    -m    {integer}  extra dim for L2_ALSH, L2_ALSH2, Sign_ALSH\n"
-		"    -U    {real}     range (0,1] for L2_ALSH, L2_ALSH2, Sign_ALSH\n"
+		"    -K    {integer}  #hash functions for Sign_ALSH and Simple_LSH\n"
+		"    -L    {integer}  #hash layers for Sign_ALSH and Simple_LSH\n"
 		"    -c0   {real}     approximation ratio of ANN search (c0 > 1)\n"
 		"    -c    {real}     approximation ratio of AMIP search (0 < c < 1)\n"
 		"    -ds   {string}   address of the data  set\n"
@@ -78,8 +77,7 @@ int main(int nargs, char **args)
 	int   qn        = -1;			// query number
 	int   d         = -1;			// dimensionality
 	int   K         = -1;			// #tables for sign-alsh and simple-lsh
-	int   m         = -1;			// param for l2-alsh, l2-alsh2, sign-alsh
-	float U         = -1.0f;		// param for l2-alsh, l2-alsh2, sign-alsh
+	int 	  L         = -1;		// # of hash layers
 	float nn_ratio  = -1.0f;		// approximation ratio of ANN search
 	float mip_ratio = -1.0f;		// approximation ratio of AMIP search
 
@@ -132,18 +130,10 @@ int main(int nargs, char **args)
 				break;
 			}
 		}
-		else if (strcmp(args[cnt], "-m") == 0) {
-			m = atoi(args[++cnt]);
-			printf("m             = %d\n", m);
-			if (m <= 0) {
-				failed = true;
-				break;
-			}
-		}
-		else if (strcmp(args[cnt], "-U") == 0) {
-			U = (float) atof(args[++cnt]);
-			printf("U             = %.2f\n", U);
-			if (U <= 0.0f || U > 1.0f) {
+		else if (strcmp(args[cnt], "-L") == 0) {
+			L = (float) atof(args[++cnt]);
+			printf("L             = %d\n", L);
+			if (L <= 0.0f || L > 1.0f) {
 				failed = true;
 				break;
 			}
@@ -203,15 +193,23 @@ int main(int nargs, char **args)
 
 	gettimeofday(&start_time, NULL);
 	float** data = new float*[n];
-	for (int i = 0; i < n; ++i) data[i] = new float[d];
-	if (read_data(n, d, data_set, data) == 1) {
+	for (int i = 0; i < n; ++i)
+	{
+		data[i] = new float[d];
+	}
+	if (read_data(n, d, data_set, data) == 1)
+	{
 		printf("Reading dataset error!\n");
 		return 1;
 	}
 
 	float** query = new float*[qn];
-	for (int i = 0; i < qn; ++i) query[i] = new float[d];
-	if (read_data(qn, d, query_set, query) == 1) {
+	for (int i = 0; i < qn; ++i)
+	{
+		query[i] = new float[d];
+	}
+	if (read_data(qn, d, query_set, query) == 1)
+	{
 		printf("Reading query set error!\n");
 		return 1;
 	}
@@ -223,7 +221,8 @@ int main(int nargs, char **args)
 	// -------------------------------------------------------------------------
 	//  methods
 	// -------------------------------------------------------------------------
-	switch (alg) {
+	switch (alg)
+	{
 	case 0:
 		ground_truth(n, qn, d, (const float **) data, (const float **) query, 
 			truth_set);
@@ -232,24 +231,12 @@ int main(int nargs, char **args)
 		h2_alsh(n, qn, d, nn_ratio, mip_ratio, (const float **) data, 
 			(const float **) query, truth_set, output_folder);
 		break;
-	case 2:
-		l2_alsh(n, qn, d, m, U, nn_ratio, (const float **) data, 
-			(const float **) query, truth_set, output_folder);
-		break;
-	case 3:
-		l2_alsh2(n, qn, d, m, U, nn_ratio, (const float **) data, 
-			(const float **) query, truth_set, output_folder);
-		break;
 	case 4:
 		xbox(n, qn, d, nn_ratio, (const float **) data, (const float **) query, 
 			truth_set, output_folder);
 		break;
-	case 5:
-		sign_alsh(n, qn, d, K, m, U, nn_ratio, (const float **) data, 
-			(const float **) query,  truth_set, output_folder);
-		break;
 	case 6:
-		simple_lsh(n, qn, d, K, nn_ratio, (const float **) data, 
+		simple_lsh(n, qn, d, K, L, nn_ratio, (const float **) data,
 			(const float **) query, truth_set, output_folder);
 		break;
 	case 7:
@@ -258,10 +245,6 @@ int main(int nargs, char **args)
 		break;
 	case 8:
 		h2_alsh_precision_recall(n, qn, d, nn_ratio, mip_ratio, (const float **) data, 
-			(const float **) query, truth_set, output_folder);
-		break;
-	case 9:
-		sign_alsh_precision_recall(n, qn, d, K, m, U, nn_ratio, (const float **) data, 
 			(const float **) query, truth_set, output_folder);
 		break;
 	case 10:
@@ -280,15 +263,21 @@ int main(int nargs, char **args)
 	// -------------------------------------------------------------------------
 	//  release space
 	// -------------------------------------------------------------------------
-	for (int i = 0; i < n; ++i) {
-		delete[] data[i]; data[i] = NULL;
+	for (int i = 0; i < n; ++i)
+	{
+		delete[] data[i];
+		data[i] = NULL;
 	}
-	delete[] data; data  = NULL;
+	delete[] data;
+	data  = NULL;
 
-	for (int i = 0; i < qn; ++i) {
-		delete[] query[i]; query[i] = NULL;
+	for (int i = 0; i < qn; ++i)
+	{
+		delete[] query[i];
+		query[i] = NULL;
 	}
-	delete[] query; query = NULL;
+	delete[] query;
+	query = NULL;
 
 	return 0;
 }

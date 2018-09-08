@@ -16,6 +16,7 @@ public:
 		int n,							// cardinality of dataset
 		int d,							// dimensionality of dataset
 		int K,							// number of hash tables
+		int L,							// number of hash layers
 		const float **data);			// data objects
 
 	// -------------------------------------------------------------------------
@@ -31,10 +32,11 @@ protected:
 	int   n_pts_;					// cardinality of dataset
 	int   dim_;						// dimensionality of dataset
 	int   K_;						// number of hash tables
+	int   L_;						// number of hash layers
 	const float **data_;			// data objects
 
-	bool  **hash_code_;				// hash code of data objects
-	float **proj_;					// random projection vectors
+	bool  ***hash_code_;				// hash code of data objects
+	float ***proj_;					// random projection vectors
 
 	// -------------------------------------------------------------------------
 	void gen_random_vectors();		// generate random projection vectors
@@ -45,7 +47,7 @@ protected:
 	// -------------------------------------------------------------------------
 	void get_proj_vector(			// get vector after random projection
 		const float *data,				// input data
-		bool *hash_code);				// hash code of input data (return)
+		bool **hash_code);				// hash code of input data (return)
 };
 
 #endif // __SRP_LSH_H

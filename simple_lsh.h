@@ -22,6 +22,7 @@ public:
 		int   n,						// number of data
 		int   d,						// dimension of data
 		int   K,						// number of hash tables
+		int   L,						// number of hash layers
 		float ratio,					// approximation ratio
 		const float** data);			// data objects
 
@@ -35,6 +36,7 @@ protected:
 	int   n_pts_;					// number of data points
 	int   dim_;						// dimension of data
 	int   K_;						// number of hash tables
+	int   L_;						// number of hash layers
 	float appr_ratio_;				// approximation ratio for AMC search
 	const float **data_;			// data objects
 	

@@ -650,6 +650,7 @@ int simple_lsh(						// mip search via simple_lsh
 	int   qn,							// number of query points
 	int   d,							// dimension of space
 	int   K,							// number of hash tables
+	int   L,							// number of hash layers
 	float nn_ratio,						// approximation ratio for nn search
 	const float **data,					// data set
 	const float **query,				// query set
@@ -665,7 +666,8 @@ int simple_lsh(						// mip search via simple_lsh
 
 	Result **R = new Result*[qn];
 	for (int i = 0; i < qn; ++i) R[i] = new Result[MAXK];
-	if (read_ground_truth(qn, truth_set, R) == 1) {
+	if (read_ground_truth(qn, truth_set, R) == 1)
+	{
 		printf("Reading Truth Set Error!\n");
 		return 1;
 	}
@@ -694,7 +696,8 @@ int simple_lsh(						// mip search via simple_lsh
 	sprintf(output_set, "%ssimple_lsh.out", output_folder);
 
 	FILE *fp = fopen(output_set, "a+");
-	if (!fp) {
+	if (!fp)
+	{
 		printf("Could not create %s\n", output_set);
 		return 1;
 	}
@@ -709,20 +712,23 @@ int simple_lsh(						// mip search via simple_lsh
 
 	printf("Top-k c-AMIP of Simple_LSH: \n");
 	printf("  Top-k\t\tRatio\t\tTime (ms)\tRecall\n");
-	for (int num = 0; num < max_round; num++) {
+	for (int num = 0; num < max_round; num++)
+	{
 		gettimeofday(&start_time, NULL);
 		top_k = kMIPs[num];
 		MaxK_List* list = new MaxK_List(top_k);
 
 		overall_ratio = 0.0f;
 		recall = 0.0f;
-		for (int i = 0; i < qn; ++i) {
+		for (int i = 0; i < qn; ++i)
+		{
 			list->reset();
 			lsh->kmip(top_k, query[i], list);
 			recall += calc_recall(top_k, (const Result *) R[i], list);
 			
 			float ratio = 0.0f;
-			for (int j = 0; j < top_k; ++j) {
+			for (int j = 0; j < top_k; ++j)
+			{
 				ratio += list->ith_key(j) / R[i][j].key_;
 			}
 			overall_ratio += ratio / top_k;
